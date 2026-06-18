@@ -1,0 +1,4 @@
+DATASET FROM KAGGLE
+
+English Songs Dataset: https://www.kaggle.com/datasets/undefinenull/million-song-dataset-spotify-lastfm
+Hindi Songs Dataset: https://www.kaggle.com/datasets/gayathripullakhandam/spotify-indian-languages-datasets
