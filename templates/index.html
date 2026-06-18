@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MelodyAI — AI Powered Song Recommendations</title>
+  <meta name="description" content="Discover your next favorite song using Artificial Intelligence. MelodyAI recommends songs you'll love based on your taste." />
+  <link rel="stylesheet" href="/static/css/style.css" />
+</head>
+<body>
+
+<!-- Floating music notes background -->
+<div class="notes-bg" id="notesBg"></div>
+
+<!-- Landing Hero -->
+<section class="landing">
+
+  <div class="landing-badge">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/>
+    </svg>
+    AI-Powered Music Discovery
+  </div>
+
+  <h1>
+    Meet <span class="highlight">MelodyAI</span><br/>
+    Your Personal DJ
+  </h1>
+
+  <p class="tagline">
+    Discover your next favorite song using Artificial Intelligence.
+    Powered by K-Means clustering and Cosine Similarity across 51,000+ tracks.
+  </p>
+
+  <div class="landing-actions">
+    <a href="/auth?mode=signup" class="btn btn-primary btn-lg" id="btn-signup">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/>
+      </svg>
+      Get Started Free
+    </a>
+    <a href="/auth?mode=login" class="btn btn-outline btn-lg" id="btn-login">
+      Sign In
+    </a>
+  </div>
+
+  <!-- Audio Visualizer -->
+  <div class="visualizer" id="visualizer"></div>
+
+</section>
+
+<!-- Toast Container -->
+<div id="toast-container"></div>
+
+<script>
+  /* ── Redirect if already logged in ── */
+  const user = localStorage.getItem('melody_user');
+  if (user) { window.location.href = '/favorites'; }
+
+  /* ── Generate floating music notes ── */
+  const notesBg = document.getElementById('notesBg');
+  const noteChars = ['♩','♪','♫','♬','🎵','🎶','🎼'];
+  for (let i = 0; i < 22; i++) {
+    const note = document.createElement('span');
+    note.className = 'note';
+    note.textContent = noteChars[Math.floor(Math.random() * noteChars.length)];
+    note.style.left = Math.random() * 100 + '%';
+    note.style.top  = (80 + Math.random() * 30) + '%';
+    const dur  = 9 + Math.random() * 14;
+    const delay = Math.random() * 12;
+    note.style.animationDuration = dur + 's';
+    note.style.animationDelay   = delay + 's';
+    note.style.fontSize = (1.2 + Math.random() * 1.8) + 'rem';
+    notesBg.appendChild(note);
+  }
+
+  /* ── Build audio visualizer bars ── */
+  const vis = document.getElementById('visualizer');
+  const barCount = 28;
+  for (let i = 0; i < barCount; i++) {
+    const bar = document.createElement('div');
+    bar.className = 'bar';
+    const dur   = 0.6 + Math.random() * 0.9;
+    const delay = Math.random() * 0.7;
+    const maxH  = 18 + Math.random() * 36;
+    bar.style.animationDuration = dur + 's';
+    bar.style.animationDelay   = delay + 's';
+    bar.style.setProperty('--max-h', maxH + 'px');
+    vis.appendChild(bar);
+  }
+</script>
+</body>
+</html>

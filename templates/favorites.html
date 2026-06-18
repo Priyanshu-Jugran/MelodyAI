@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MelodyAI — Your Favorites</title>
+  <meta name="description" content="Your personalized MelodyAI dashboard. Click a song to get AI-powered recommendations." />
+  <link rel="stylesheet" href="/static/css/style.css" />
+  <style>
+    .favorites-wrap { max-width: 1200px; margin: 0 auto; }
+
+    .greeting-banner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      background: linear-gradient(135deg, rgba(29,185,84,0.10) 0%, rgba(168,85,247,0.06) 100%);
+      border: 1px solid rgba(29,185,84,0.18);
+      border-radius: var(--radius-xl);
+      padding: 28px 36px;
+      margin-bottom: 40px;
+      flex-wrap: wrap;
+    }
+
+    .greeting-text h2 {
+      font-size: 1.7rem;
+      font-weight: 800;
+      letter-spacing: -0.3px;
+      margin-bottom: 6px;
+    }
+
+    .greeting-text p {
+      color: var(--text-secondary);
+      font-size: 0.93rem;
+    }
+
+    .greeting-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .section-divider {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .section-divider h2 {
+      font-size: 1.3rem;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .section-divider hr {
+      flex: 1;
+      border: none;
+      border-top: 1px solid var(--glass-border);
+    }
+
+    /* Override song-grid for favorites (5 cards) */
+    #favorites-grid {
+      grid-template-columns: repeat(5, 1fr);
+    }
+
+    @media (max-width: 1100px) { #favorites-grid { grid-template-columns: repeat(3, 1fr); } }
+    @media (max-width: 700px)  { #favorites-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 440px)  { #favorites-grid { grid-template-columns: 1fr; } }
+
+    .click-hint {
+      text-align: center;
+      margin-top: 28px;
+      padding: 14px;
+      border-radius: var(--radius-md);
+      background: var(--bg-card);
+      border: 1px dashed var(--glass-border);
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    .click-hint span { color: var(--accent); font-weight: 600; }
+  </style>
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar">
+  <div class="nav-logo">
+    <div class="logo-icon">
+      <svg viewBox="0 0 24 24"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
+    </div>
+    Melody<span class="logo-dot">AI</span>
+  </div>
+  <div class="nav-actions">
+    <span id="nav-username" style="font-size:0.85rem;color:var(--text-secondary);margin-right:4px;"></span>
+    <a href="/onboarding" class="btn btn-ghost btn-sm">Edit Favorites</a>
+    <button class="btn btn-ghost btn-sm" onclick="logout()">Sign Out</button>
+  </div>
+</nav>
+
+<!-- Main -->
+<main class="page">
+  <div class="favorites-wrap">
+
+    <!-- Greeting Banner -->
+    <div class="greeting-banner">
+      <div class="greeting-text">
+        <h2 id="greeting-heading">Good evening 👋</h2>
+        <p>What would you like to listen to today?</p>
+      </div>
+      <div class="greeting-actions">
+        <a href="/onboarding" class="btn btn-outline btn-sm">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+          </svg>
+          Edit Favorites
+        </a>
+      </div>
+    </div>
+
+    <!-- Favorites Grid -->
+    <div class="section-divider">
+      <h2>🎵 Your Favorites</h2>
+      <hr />
+    </div>
+
+    <div class="song-grid" id="favorites-grid">
+      <!-- Populated by JS -->
+    </div>
+
+    <div class="click-hint">
+      👆 <span>Click any song</span> above to instantly get 5 AI-powered recommendations
+    </div>
+
+  </div>
+</main>
+
+<div id="toast-container"></div>
+<div class="loading-overlay" id="loading-overlay">
+  <div class="spinner"></div>
+  <p id="loading-text">Finding recommendations…</p>
+</div>
+
+<script src="/static/js/app.js"></script>
+<script>
+  // Page-specific init
+  initFavoritesPage();
+</script>
+</body>
+</html>

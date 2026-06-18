@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MelodyAI — Choose Your Favorites</title>
+  <meta name="description" content="Pick your 5 favorite songs to personalize your MelodyAI experience." />
+  <link rel="stylesheet" href="/static/css/style.css" />
+  <style>
+    .onboarding-wrap {
+      max-width: 720px;
+      margin: 0 auto;
+    }
+    .step-indicator {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 36px;
+    }
+    .step-dot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      background: var(--glass-border);
+      transition: var(--transition);
+    }
+    .step-dot.done { background: var(--accent); box-shadow: 0 0 8px var(--accent-glow); }
+
+    .search-section {
+      background: var(--bg-card);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      margin-bottom: 24px;
+    }
+
+    .selected-section {
+      background: var(--bg-card);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      margin-bottom: 28px;
+    }
+
+    .selected-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+
+    .selected-header h3 {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+
+    .no-selection-hint {
+      text-align: center;
+      padding: 24px;
+      color: var(--text-muted);
+      font-size: 0.88rem;
+    }
+    .no-selection-hint span { font-size: 1.6rem; display:block; margin-bottom:8px; }
+
+    .continue-area {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .tip-text {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+    }
+
+    /* Pill list layout */
+    .pill-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .pill-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 14px;
+      background: var(--bg-secondary);
+      border-radius: var(--radius-md);
+      border: 1px solid var(--glass-border);
+      animation: pill-in 0.2s ease;
+    }
+
+    .pill-num {
+      width: 26px; height: 26px;
+      border-radius: 50%;
+      background: var(--accent);
+      color: #000;
+      font-size: 0.75rem;
+      font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .pill-row-name {
+      flex: 1;
+      font-size: 0.9rem;
+      font-weight: 500;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .pill-row-artist {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 160px;
+    }
+
+    .pill-row-remove {
+      width: 26px; height: 26px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--glass-border);
+      color: var(--text-muted);
+      font-size: 16px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: var(--transition);
+    }
+    .pill-row-remove:hover { background: var(--error-bg); border-color: var(--error); color: var(--error); }
+  </style>
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar">
+  <div class="nav-logo">
+    <div class="logo-icon">
+      <svg viewBox="0 0 24 24"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
+    </div>
+    Melody<span class="logo-dot">AI</span>
+  </div>
+  <div class="nav-actions">
+    <span id="nav-username" style="font-size:0.85rem;color:var(--text-secondary);"></span>
+    <button class="btn btn-ghost btn-sm" onclick="logout()" id="btn-logout">Sign Out</button>
+  </div>
+</nav>
+
+<!-- Main -->
+<main class="page">
+  <div class="onboarding-wrap">
+
+    <!-- Step indicator -->
+    <div class="step-indicator">
+      <div class="step-dot done"></div>
+      <div class="step-dot done"></div>
+      <div class="step-dot" id="step3" ></div>
+      <span style="font-size:0.8rem;color:var(--text-muted);margin-left:6px;">Step 2 of 2</span>
+    </div>
+
+    <div class="page-header">
+      <h1>Your Top 5 Songs 🎵</h1>
+      <p>Search and select exactly 5 songs you love. We'll use them to find recommendations just for you.</p>
+    </div>
+
+    <!-- Search Section -->
+    <div class="search-section">
+      <div class="search-wrap" style="max-width:100%;">
+        <span class="search-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+        </span>
+        <input
+          class="search-input"
+          type="text"
+          id="song-search"
+          placeholder="Search from 51,000+ songs…"
+          autocomplete="off"
+        />
+        <div class="autocomplete-drop" id="autocomplete-drop"></div>
+      </div>
+    </div>
+
+    <!-- Selected Songs -->
+    <div class="selected-section">
+      <div class="selected-header">
+        <h3>Selected Songs</h3>
+        <div class="counter-badge" id="counter-badge">
+          <span class="dot"></span>
+          <span id="counter-text">0 / 5 selected</span>
+        </div>
+      </div>
+
+      <div id="no-selection-hint" class="no-selection-hint">
+        <span>🎧</span>
+        Search and select your 5 favorite songs above
+      </div>
+
+      <div class="pill-list" id="pill-list"></div>
+    </div>
+
+    <!-- Continue -->
+    <div class="continue-area">
+      <p class="tip-text">💡 You can always change your selections later</p>
+      <button class="btn btn-primary btn-lg" id="continue-btn" disabled onclick="saveAndContinue()">
+        Continue
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/>
+        </svg>
+      </button>
+    </div>
+
+  </div>
+</main>
+
+<div id="toast-container"></div>
+<div class="loading-overlay" id="loading-overlay">
+  <div class="spinner"></div>
+  <p>Saving your preferences…</p>
+</div>
+
+<script src="/static/js/onboarding.js"></script>
+</body>
+</html>

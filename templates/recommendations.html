@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MelodyAI — Recommendations</title>
+  <meta name="description" content="AI-powered song recommendations based on your selected track." />
+  <link rel="stylesheet" href="/static/css/style.css" />
+  <style>
+    .recs-wrap { max-width: 1200px; margin: 0 auto; }
+
+    /* Now Playing Banner */
+    .now-playing-banner {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      background: linear-gradient(135deg, rgba(29,185,84,0.08) 0%, rgba(0,0,0,0) 80%);
+      border: 1px solid rgba(29,185,84,0.20);
+      border-radius: var(--radius-xl);
+      padding: 20px 28px;
+      margin-bottom: 36px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .now-playing-banner::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 4px;
+      background: var(--accent);
+      border-radius: 2px 0 0 2px;
+    }
+
+    .np-img {
+      width: 58px; height: 58px;
+      border-radius: var(--radius-sm);
+      object-fit: cover;
+      flex-shrink: 0;
+      box-shadow: 0 4px 16px var(--accent-glow);
+    }
+
+    .np-info { flex: 1; min-width: 0; }
+
+    .np-label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .pulse-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: var(--accent);
+      animation: pulse 1.4s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1;   transform: scale(1);   }
+      50%       { opacity: 0.4; transform: scale(0.7); }
+    }
+
+    .np-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .np-artist {
+      font-size: 0.83rem;
+      color: var(--text-secondary);
+    }
+
+    /* Recs grid */
+    #recs-grid {
+      grid-template-columns: repeat(5, 1fr);
+      position: relative;
+    }
+
+    @media (max-width: 1100px) { #recs-grid { grid-template-columns: repeat(3, 1fr); } }
+    @media (max-width: 700px)  { #recs-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 440px)  { #recs-grid { grid-template-columns: 1fr; } }
+
+    /* Card skeleton during loading */
+    .card-skeleton {
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      background: var(--bg-card);
+      border: 1px solid var(--glass-border);
+    }
+
+    .skeleton-img  { width: 100%; aspect-ratio: 1; }
+    .skeleton-body { padding: 14px; display: flex; flex-direction: column; gap: 8px; }
+    .skeleton-line { height: 12px; border-radius: 6px; }
+    .skeleton-line.w70 { width: 70%; }
+    .skeleton-line.w50 { width: 50%; }
+
+    /* Transition overlay for smooth card swap */
+    #recs-grid.transitioning { opacity: 0; transform: translateY(12px); transition: opacity 0.25s, transform 0.25s; }
+    #recs-grid.visible       { opacity: 1; transform: translateY(0);  transition: opacity 0.35s, transform 0.35s; }
+
+    /* Chain history sidebar */
+    .chain-wrap {
+      background: var(--bg-card);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      margin-bottom: 32px;
+    }
+
+    .chain-title {
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 14px;
+    }
+
+    .chain-list {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .chain-item {
+      padding: 5px 14px;
+      border-radius: var(--radius-full);
+      font-size: 0.8rem;
+      font-weight: 500;
+      background: var(--bg-secondary);
+      border: 1px solid var(--glass-border);
+      color: var(--text-muted);
+      max-width: 160px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .chain-item.active {
+      background: var(--success-bg);
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .chain-arrow {
+      color: var(--text-muted);
+      font-size: 0.75rem;
+      flex-shrink: 0;
+    }
+
+    .section-divider {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .section-divider h2 { font-size: 1.3rem; font-weight: 700; white-space: nowrap; }
+    .section-divider hr { flex: 1; border: none; border-top: 1px solid var(--glass-border); }
+
+    .back-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 28px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .counter-info {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      background: var(--bg-card);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-full);
+      padding: 5px 14px;
+    }
+
+    .counter-info span { color: var(--accent); font-weight: 600; }
+  </style>
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar">
+  <div class="nav-logo">
+    <div class="logo-icon">
+      <svg viewBox="0 0 24 24"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
+    </div>
+    Melody<span class="logo-dot">AI</span>
+  </div>
+  <div class="nav-actions">
+    <span id="nav-username" style="font-size:0.85rem;color:var(--text-secondary);margin-right:4px;"></span>
+    <a href="/favorites" class="btn btn-ghost btn-sm">My Favorites</a>
+    <button class="btn btn-ghost btn-sm" onclick="logout()">Sign Out</button>
+  </div>
+</nav>
+
+<!-- Main -->
+<main class="page">
+  <div class="recs-wrap">
+
+    <!-- Back + counter row -->
+    <div class="back-row">
+      <a href="/favorites" class="btn btn-ghost btn-sm">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+        </svg>
+        Back to Favorites
+      </a>
+      <div class="counter-info">Recommendation #<span id="hop-counter">1</span></div>
+    </div>
+
+    <!-- Now Playing -->
+    <div class="now-playing-banner" id="now-playing-banner">
+      <img src="/static/assets/placeholder.png" class="np-img" alt="Now playing" id="np-img" />
+      <div class="np-info">
+        <div class="np-label">
+          <span class="pulse-dot"></span>
+          Now Playing
+        </div>
+        <div class="np-title" id="np-title">Loading…</div>
+        <div class="np-artist" id="np-artist"></div>
+      </div>
+    </div>
+
+    <!-- Chain History -->
+    <div class="chain-wrap" id="chain-wrap" style="display:none;">
+      <div class="chain-title">🔗 Recommendation Chain</div>
+      <div class="chain-list" id="chain-list"></div>
+    </div>
+
+    <!-- Recommendations -->
+    <div class="section-divider">
+      <h2>✨ You May Also Like</h2>
+      <hr />
+    </div>
+
+    <div class="song-grid" id="recs-grid">
+      <!-- skeleton placeholders shown during load -->
+    </div>
+
+    <!-- Error state -->
+    <div id="error-state" class="state-box" style="display:none;">
+      <div class="state-icon">😔</div>
+      <h3>Song Not Found</h3>
+      <p id="error-message">This song doesn't exist in our dataset. Try choosing another one.</p>
+      <a href="/favorites" class="btn btn-primary" style="margin-top:8px;">Go Back</a>
+    </div>
+
+  </div>
+</main>
+
+<div id="toast-container"></div>
+<div class="loading-overlay" id="loading-overlay">
+  <div class="spinner"></div>
+  <p>Finding similar songs…</p>
+</div>
+
+<script src="/static/js/app.js"></script>
+<script>
+  initRecommendationsPage();
+</script>
+</body>
+</html>
